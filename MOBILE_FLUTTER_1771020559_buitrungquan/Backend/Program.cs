@@ -76,20 +76,32 @@ builder.Services.AddAuthentication(options =>
     };
 });
 
-// ==================== CORS (FIXED) ====================
+// ==================== CORS ====================
 builder.Services.AddCors(options =>
 {
-   options.AddPolicy("FlutterWeb", policy =>
-{
-    policy
-        .SetIsOriginAllowed(origin =>
-            origin.StartsWith("http://localhost"))
-        .AllowAnyMethod()
-        .AllowAnyHeader()
-        .AllowCredentials();
-});
-      
+    // Policy that allows any localhost origin (any port) and common dev hosts
+    options.AddPolicy("FlutterWeb", policy =>
+    {
+        policy
+            .SetIsOriginAllowed(origin =>
+            {
+                if (string.IsNullOrEmpty(origin)) return false;
+                // allow localhost with any port, and 127.0.0.1
+                if (origin.StartsWith("http://localhost") || origin.StartsWith("https://localhost")) return true;
+                if (origin.StartsWith("http://127.0.0.1") || origin.StartsWith("https://127.0.0.1")) return true;
+
+                // allow deployed frontend (add your production domain(s) here)
+                var allowed = new[] {
+                    "https://flutter-pickerball.onrender.com",
+                };
+
+                return allowed.Contains(origin);
+            })
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
+});
 
 
 // ==================== Controllers & SignalR ====================
