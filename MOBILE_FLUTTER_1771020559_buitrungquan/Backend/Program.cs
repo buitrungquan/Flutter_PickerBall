@@ -79,24 +79,18 @@ builder.Services.AddAuthentication(options =>
 // ==================== CORS (FIXED) ====================
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
-    {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-    options.AddPolicy("FlutterWeb", policy =>
-    {
-        policy
-            .WithOrigins(
-                        "http://localhost",
-                        "https://flutter-pickerball.onrender.com"
-                    )
-            .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials();
-    });
+   options.AddPolicy("FlutterWeb", policy =>
+{
+    policy
+        .SetIsOriginAllowed(origin =>
+            origin.StartsWith("http://localhost"))
+        .AllowAnyMethod()
+        .AllowAnyHeader()
+        .AllowCredentials();
 });
+      
+    });
+
 
 // ==================== Controllers & SignalR ====================
 builder.Services.AddControllers();
@@ -175,16 +169,7 @@ app.UseRouting();
 
 // Temporarily allow any origin to rule out CORS issues during debugging.
 // NOTE: revert to "FlutterWeb" for production to restrict allowed origins.
-app.UseCors("AllowAll");
-app.Use(async (context, next) =>
-{
-    if (context.Request.Method == "OPTIONS")
-    {
-        context.Response.StatusCode = 200;
-        return;
-    }
-    await next();
-});
+app.UseCors("FlutterWeb");
 
 app.UseAuthentication();
 app.UseAuthorization();
