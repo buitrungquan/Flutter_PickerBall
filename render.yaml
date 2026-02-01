@@ -1,0 +1,13 @@
+services:
+  - type: web
+    name: flutter-pickleball-backend
+    env: docker
+    dockerfilePath: ./MOBILE_FLUTTER_1771020559_buitrungquan/Backend/Dockerfile
+    autoDeploy: true
+    buildCommand: ""  # Dockerfile handles everything
+    startCommand: ""  # ENTRYPOINT in Dockerfile
+    envVars:
+      - key: ASPNETCORE_URLS
+        value: http://0.0.0.0:8080
+      - key: ASPNETCORE_ENVIRONMENT
+        value: Production

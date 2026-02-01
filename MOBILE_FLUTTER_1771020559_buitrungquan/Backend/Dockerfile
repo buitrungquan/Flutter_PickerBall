@@ -14,6 +14,8 @@ RUN dotnet publish "PcmBackend.csproj" -c Release -o /app/publish
 FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+# Copy SQLite database
+COPY pcm.db ./
 
 # Expose port and force override URLs
 EXPOSE 8080

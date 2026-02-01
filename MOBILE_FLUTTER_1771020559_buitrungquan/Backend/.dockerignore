@@ -1,0 +1,13 @@
+bin/
+obj/
+.vs/
+.vscode/
+.git/
+.gitignore
+.DS_Store
+*.log
+*.user
+*.suo
+publish_vps/
+.env
+.env.local
