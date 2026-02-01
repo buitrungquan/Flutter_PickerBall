@@ -79,7 +79,7 @@ builder.Services.AddAuthentication(options =>
 // ==================== CORS (FIXED) ====================
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("FlutterWeb", policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
         policy
             .WithOrigins(
