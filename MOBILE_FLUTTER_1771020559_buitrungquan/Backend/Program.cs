@@ -83,10 +83,11 @@ builder.Services.AddCors(options =>
     {
         policy
             .WithOrigins(
-                "http://localhost:3000",
-                "http://localhost:5000",
-                "https://flutter-pickerball.onrender.com"
-            )
+                        "http://localhost:3000",
+                        "http://localhost:4000",
+                        "http://localhost:5000",
+                        "https://flutter-pickerball.onrender.com"
+                    )
             .AllowAnyMethod()
             .AllowAnyHeader()
             .AllowCredentials();
