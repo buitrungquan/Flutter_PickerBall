@@ -176,6 +176,15 @@ app.UseRouting();
 // Temporarily allow any origin to rule out CORS issues during debugging.
 // NOTE: revert to "FlutterWeb" for production to restrict allowed origins.
 app.UseCors("AllowAll");
+app.Use(async (context, next) =>
+{
+    if (context.Request.Method == "OPTIONS")
+    {
+        context.Response.StatusCode = 200;
+        return;
+    }
+    await next();
+});
 
 app.UseAuthentication();
 app.UseAuthorization();
