@@ -81,6 +81,12 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAll", policy =>
     {
+        policy.AllowAnyOrigin()
+              .AllowAnyMethod()
+              .AllowAnyHeader();
+    });
+    options.AddPolicy("FlutterWeb", policy =>
+    {
         policy
             .WithOrigins(
                         "http://localhost:3000",
