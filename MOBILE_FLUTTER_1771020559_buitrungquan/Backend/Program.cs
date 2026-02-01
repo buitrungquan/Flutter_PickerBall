@@ -175,7 +175,9 @@ app.UseSwaggerUI(c =>
 
 app.UseRouting();
 
-app.UseCors("FlutterWeb");
+// Temporarily allow any origin to rule out CORS issues during debugging.
+// NOTE: revert to "FlutterWeb" for production to restrict allowed origins.
+app.UseCors("AllowAll");
 
 app.UseAuthentication();
 app.UseAuthorization();
