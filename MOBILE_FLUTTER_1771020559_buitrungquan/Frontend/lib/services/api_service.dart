@@ -1,10 +1,10 @@
 import 'package:dio/dio.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import '../config/api_config.dart';
 
 class ApiService {
-  // Local API URL (localhost)
-  static const String baseUrl =
-    'https://marilynn-wearproof-miah.ngrok-free.dev/api';
+  // Use centralized ApiConfig so we don't hardcode environment-specific URLs
+  static final String baseUrl = ApiConfig.baseUrl;
 
 
   late Dio _dio;

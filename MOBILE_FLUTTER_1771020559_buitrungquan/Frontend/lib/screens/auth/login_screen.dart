@@ -83,18 +83,23 @@ class _LoginScreenState extends State<LoginScreen>
             opacity: _fadeAnimation,
             child: SingleChildScrollView(
               padding: const EdgeInsets.all(24),
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: [
-                  const SizedBox(height: 40),
-                  _buildHeader(),
-                  const SizedBox(height: 40),
-                  _buildForm(),
-                  const SizedBox(height: 24),
-                  _buildToggleButton(),
-                  const SizedBox(height: 24),
-                  _buildDemoAccounts(),
-                ],
+              child: Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 900),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.stretch,
+                    children: [
+                      const SizedBox(height: 40),
+                      _buildHeader(),
+                      const SizedBox(height: 40),
+                      _buildForm(),
+                      const SizedBox(height: 24),
+                      _buildToggleButton(),
+                      const SizedBox(height: 24),
+                      _buildDemoAccounts(),
+                    ],
+                  ),
+                ),
               ),
             ),
           ),
