@@ -10,17 +10,17 @@ using PcmBackend.Services;
 
 var builder = WebApplication.CreateBuilder(args);
 
-// Only set default URLs if ASPNETCORE_URLS is not set (for local development)
+// ==================== URL Configuration ====================
 if (string.IsNullOrEmpty(Environment.GetEnvironmentVariable("ASPNETCORE_URLS")))
 {
     builder.WebHost.UseUrls("http://localhost:8000", "http://0.0.0.0:8000");
 }
 
-// ==================== Database Configuration ====================
+// ==================== Database ====================
 builder.Services.AddDbContext<ApplicationDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-// ==================== Identity Configuration ====================
+// ==================== Identity ====================
 builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 {
     options.Password.RequireDigit = true;
@@ -32,8 +32,9 @@ builder.Services.AddIdentity<IdentityUser, IdentityRole>(options =>
 .AddEntityFrameworkStores<ApplicationDbContext>()
 .AddDefaultTokenProviders();
 
-// ==================== JWT Configuration ====================
-var jwtKey = builder.Configuration["Jwt:Key"] ?? "YourDefaultSecretKey123456789012345678901234";
+// ==================== JWT ====================
+var jwtKey = builder.Configuration["Jwt:Key"]
+    ?? "YourDefaultSecretKey123456789012345678901234";
 var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "PcmBackend";
 var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "PcmMobileApp";
 
@@ -52,41 +53,43 @@ builder.Services.AddAuthentication(options =>
         ValidateIssuerSigningKey = true,
         ValidIssuer = jwtIssuer,
         ValidAudience = jwtAudience,
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtKey))
+        IssuerSigningKey = new SymmetricSecurityKey(
+            Encoding.UTF8.GetBytes(jwtKey))
     };
 
-    // Support SzignalR authentication via query string
+    // SignalR JWT
     options.Events = new JwtBearerEvents
     {
         OnMessageReceived = context =>
         {
             var accessToken = context.Request.Query["access_token"];
             var path = context.HttpContext.Request.Path;
-            if (!string.IsNullOrEmpty(accessToken) && path.StartsWithSegments("/hubs/pcm"))
+
+            if (!string.IsNullOrEmpty(accessToken)
+                && path.StartsWithSegments("/hubs/pcm"))
             {
                 context.Token = accessToken;
             }
+
             return Task.CompletedTask;
         }
     };
 });
 
-// ==================== CORS Configuration ====================
+// ==================== CORS (FIXED) ====================
 builder.Services.AddCors(options =>
 {
-    options.AddPolicy("AllowAll", policy =>
+    options.AddPolicy("FlutterWeb", policy =>
     {
-        policy.AllowAnyOrigin()
-              .AllowAnyMethod()
-              .AllowAnyHeader();
-    });
-
-    options.AddPolicy("AllowMobileApp", policy =>
-    {
-        policy.WithOrigins("http://localhost:3000", "https://localhost:3000")
-              .AllowAnyMethod()
-              .AllowAnyHeader()
-              .AllowCredentials();
+        policy
+            .WithOrigins(
+                "http://localhost:3000",
+                "http://localhost:5000",
+                "https://flutter-pickerball.onrender.com"
+            )
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials();
     });
 });
 
@@ -146,46 +149,26 @@ using (var scope = app.Services.CreateScope())
         var userManager = services.GetRequiredService<UserManager<IdentityUser>>();
         var roleManager = services.GetRequiredService<RoleManager<IdentityRole>>();
 
-        // Apply migrations
         context.Database.Migrate();
-
-        // Seed data
         await DbSeeder.SeedAsync(context, userManager, roleManager);
     }
     catch (Exception ex)
     {
         var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while seeding the database.");
+        logger.LogError(ex, "Seeding database failed");
     }
 }
 
 // ==================== Middleware Pipeline ====================
-// Enable Swagger in all environments for testing
 app.UseSwagger();
 app.UseSwaggerUI(c =>
 {
     c.SwaggerEndpoint("/swagger/v1/swagger.json", "PCM API v1");
-    c.RoutePrefix = "swagger";
 });
 
-// app.UseHttpsRedirection(); // Disabled for development - allow HTTP
+app.UseRouting();
 
-// Handle CORS preflight OPTIONS requests
-app.Use(async (context, next) =>
-{
-    if (context.Request.Method == "OPTIONS")
-    {
-        context.Response.Headers.Add("Access-Control-Allow-Origin", "*");
-        context.Response.Headers.Add("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS");
-        context.Response.Headers.Add("Access-Control-Allow-Headers", "*");
-        context.Response.StatusCode = 200;
-        await context.Response.CompleteAsync();
-        return;
-    }
-    await next();
-});
-
-app.UseCors("AllowAll");
+app.UseCors("FlutterWeb");
 
 app.UseAuthentication();
 app.UseAuthorization();
